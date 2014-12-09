@@ -1,6 +1,6 @@
 auto-close-otbedit
 ==================
-autoclose-otbedit is a macro for [OTBEdit](http://www.hi-ho.ne.jp/a_ogawa/otbedit/).
+auto-close-otbedit is a macro for [OTBEdit](http://www.hi-ho.ne.jp/a_ogawa/otbedit/).
 This macro provides auto brancket closing
 
 Usage
@@ -16,14 +16,14 @@ Usage
 
 Installation
 ====================
-1. download autoclose-otbedit.zip from the [releases page](https://github.com/kusabashira/autoclose-otbedit/releases)
+1. download autoclose-otbedit.zip from the [releases page](https://github.com/kusabashira/auto-close-otbedit/releases)
 
 2. Unpack the zip file, and put all in your OTBEdit directory.
 
 3. Write in otbedit.scm in scmlib directory.
 
 ```scm
-(use autoclose)
+(use auto-close)
 ```
 (Please create if otbedit.scm doesn't exist in scmlib directory)
 
