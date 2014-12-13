@@ -1,123 +1,135 @@
-(define (get-back-char)
-  (editor-get-row-col-char
-    (editor-get-cur-row)
-    (- (editor-get-cur-col) 1)))
-    
-(define (get-next-char)
-  (editor-get-row-col-char
-    (editor-get-cur-row)
-    (editor-get-cur-col)))
+(define (load-wara-auto-close)
+  (define (get-back-char)
+    (editor-get-row-col-char
+      (editor-get-cur-row)
+      (- (editor-get-cur-col) 1)))
 
-(define (delete-back-and-next-char)
-  (editor-forward-char 1 #f)
-  (editor-backward-char 2 #t)
-  (editor-delete-selected-string))
+  (define (get-next-char)
+    (editor-get-row-col-char
+      (editor-get-cur-row)
+      (editor-get-cur-col)))
 
-(define (back-space)
-  (if (editor-get-selected-area)
-      (editor-delete-selected-string)
-      (begin
+  (define (get-back-and-next-char)
+    (string (get-back-char)
+            (get-next-char)))
+
+  (define (delete-back-and-next-char)
+    (editor-forward-char 1 #f)
+    (editor-backward-char 2 #t)
+    (editor-delete-selected-string))
+
+  (define (area-selected?)
+    (list? (editor-get-selected-area)))
+
+  (define (back-space)
+    (cond
+      ((area-selected?)
+       (editor-delete-selected-string))
+      (else
         (editor-backward-char 1 #t)
         (editor-delete-selected-string))))
 
-(define (next-char? ch)
-  (let ((next-ch (get-next-char)))
-    (and (not (eof-object? next-ch))
-         (char=? ch next-ch))))
+  (define (back-char? ch)
+    (let ((back-ch (get-back-char)))
+      (and (not (eof-object? back-ch))
+           (char=? ch back-ch))))
 
-(define (any? proc ls)
-  (eval (cons 'or (map proc ls))))
+  (define (next-char? ch)
+    (let ((next-ch (get-next-char)))
+      (and (not (eof-object? next-ch))
+           (char=? ch next-ch))))
 
-(define (surrounded? ls)
-  (and (not (eof-object? (get-next-char)))
-       (any?
-         (lambda (e) (string=? e (string (get-back-char)
-                                         (get-next-char))))
-         ls)))
+  (define (any-is-true? proc ls)
+    (eval (cons 'or (map proc ls))))
 
-(define surround-ls '("()" "[]" "{}" "\"\"" "''"))
+  (define surround-ls '("()" "[]" "{}" "\"\"" "''"))
 
-(define (original-back-space)
-  (if (surrounded? surround-ls)
-    (delete-back-and-next-char)
-    (back-space)))
+  (define (surrounded?)
+    (and (not (eof-object? (get-next-char)))
+         (any-is-true?
+           (lambda (e)
+             (string=? e (get-back-and-next-char)))
+           surround-ls)))
 
-(app-set-key "BACK" original-back-space)
+  (define (special-back-space)
+    (cond
+      ((area-selected?)
+       (back-space))
+      ((surrounded?)
+       (delete-back-and-next-char))
+      (else
+        (back-space))))
 
-;()
-(app-set-key "Shift+8"
-  (lambda ()
-    (editor-paste-string "()")
-    (editor-backward-char 1 #f)))
-(app-set-key "Shift+9"
-  (lambda ()
-    (if (next-char? #\))
-      (editor-forward-char 1 #f)
-      (editor-paste-string ")"))))
+  (app-set-key
+    "BACK"
+    special-back-space)
 
-;[]
-(app-set-key "["
-  (lambda ()
-    (editor-paste-string "[]")
-    (editor-backward-char 1 #f)))
-(app-set-key "]"
-  (lambda ()
-    (if (next-char? #\])
-      (editor-forward-char 1 #f)
-      (editor-paste-string "]"))))
+  (define (car-string str)
+    (car (string->list str)))
 
-;{}
-(app-set-key "Shift+["
-  (lambda ()
-    (editor-paste-string "{}")
-    (editor-backward-char 1 #f)))
-(app-set-key "Shift+]"
-  (lambda ()
-    (if (next-char? #\})
-      (editor-forward-char 1 #f)
-      (editor-paste-string "}"))))
+  (define (cadr-string str)
+    (cadr (string->list str)))
 
-;""
-(app-set-key "Shift+2"
-  (lambda ()
-    (if (next-char? #\")
-      (editor-forward-char 1 #f)
-      (begin
-        (editor-paste-string "\"\"")
-        (editor-backward-char 1 #f)))))
+  (define (over-write-input-key surround key-l key-r)
+    (app-set-key
+      key-l
+      (lambda ()
+        (editor-paste-string surround)
+        (editor-backward-char 1 #f)))
+    (app-set-key
+      key-r
+      (lambda ()
+        (if (next-char? (cadr-string surround))
+          (editor-forward-char 1 #f)
+          (editor-paste-string (string (cadr-string surround)))))))
 
-;''
-(app-set-key "Shift+7"
-  (lambda ()
-    (if (next-char? #\')
-      (editor-forward-char 1 #f)
-      (begin
-        (editor-paste-string "''")
-        (editor-backward-char 1 #f)))))
+  (over-write-input-key "()" "Shift+8" "Shift+9")
+  (over-write-input-key "[]" "[" "]")
+  (over-write-input-key "{}" "Shift+[" "Shift+]")
 
-(define (expandable-bracket?)
-  (and (next-char? #\})
-       (= (string-length (editor-get-row-string (editor-get-cur-row))))
-          (+ 1 (editor-get-cur-col))))
+  (define (over-write-input-key-same surround key)
+    (app-set-key
+      key
+      (lambda ()
+        (cond
+          ((next-char? surround)
+           (editor-forward-char 1 #f))
+          (else
+            (editor-paste-string (string surround surround))
+            (editor-backward-char 1 #f))))))
 
-(define (get-current-indent)
-  (let ((indent (rxmatch-substring
-                  (rxmatch
-                  #/^\t+/
-                  (editor-get-row-string (editor-get-cur-row))))))
-    (if indent
-      (string-length indent)
-      0)))
+  (over-write-input-key-same #\" "Shift+2")
+  (over-write-input-key-same #\' "Shift+7")
 
-(app-set-key "ENTER"
-  (lambda ()
-    (let ((current-indent (get-current-indent)))
-      (cond
-	((expandable-bracket?)
-	 (editor-paste-string "\n\n")
-	 (editor-paste-string (make-string current-indent #\tab))
-	 (editor-previous-line 1 #f)
-	 (editor-paste-string (make-string (+ current-indent 1) #\tab)))
-	(else
-	 (editor-paste-string "\n")
-	 (editor-paste-string (make-string current-indent #\tab)))))))
+  (define (expandable-bracket?)
+    (or (next-char? #\}) (next-char? #\]) (next-char? #\))))
+
+  (define (bracket?)
+    (or (back-char? #\{) (back-char? #\[) (back-char? #\()))
+
+  (define (get-current-indent)
+    (let ((indent (rxmatch-substring
+                    (rxmatch #/^\t+/
+                             (editor-get-row-string (editor-get-cur-row))))))
+      (if (boolean? indent)
+        0
+        (string-length indent))))
+
+  (app-set-key
+    "ENTER"
+    (lambda ()
+      (let ((current-indent (get-current-indent)))
+        (cond
+          ((expandable-bracket?)
+           (editor-paste-string "\n\n")
+           (editor-paste-string (make-string current-indent #\tab))
+           (editor-previous-line 1 #f)
+           (editor-paste-string (make-string (+ 1 current-indent) #\tab)))
+          ((bracket?)
+           (editor-paste-string "\n")
+           (editor-paste-string (make-string (+ 1 current-indent) #\tab)))
+          (else
+            (editor-paste-string "\n")
+            (editor-paste-string (make-string current-indent #\tab))))))))
+
+(load-wara-auto-close)
