@@ -1,6 +1,6 @@
-auto-close-otbedit
+auto-close-OTBEdit
 ==================
-auto-close-otbedit is a macro for [OTBEdit](http://www.hi-ho.ne.jp/a_ogawa/otbedit/).
+auto-close-OTBEdit is a macro for [OTBEdit](http://www.hi-ho.ne.jp/a_ogawa/otbedit/).
 This macro provides auto brancket closing
 
 Usage
