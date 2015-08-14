@@ -4,16 +4,26 @@ auto-close-OTBEdit
 auto-close-OTBEdit is a macro for [OTBEdit](http://www.hi-ho.ne.jp/a_ogawa/otbedit/).
 This macro provides auto brancket closing.
 
-Usage
+Rules
 -----
 
-1. Start OTBEdit.
-
-2. Input (.
-
-```
-(|)
-```
+| Before | Input | After |
+|--------|-------|-------|
+| |      | (     | (|)   |
+| |      | [     | [|]   |
+| |      | {     | {|}   |
+| |      | '     | '|'   |
+| |      | "     | "|"   |
+| (|)    | )     | ()|   |
+| [|]    | ]     | []|   |
+| {|}    | }     | {}|   |
+| '|'    | '     | ''|   |
+| "|"    | "     | ""|   |
+| (|)    | <BS>  | |     |
+| [|]    | <BS>  | |     |
+| {|}    | <BS>  | |     |
+| '|'    | <BS>  | |     |
+| "|"    | <BS>  | |     |
 
 (Cursor is in |)
 
