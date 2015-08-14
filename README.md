@@ -1,10 +1,12 @@
 auto-close-OTBEdit
 ==================
+
 auto-close-OTBEdit is a macro for [OTBEdit](http://www.hi-ho.ne.jp/a_ogawa/otbedit/).
-This macro provides auto brancket closing
+This macro provides auto brancket closing.
 
 Usage
-====================
+-----
+
 1. Start OTBEdit.
 
 2. Input (.
@@ -12,10 +14,12 @@ Usage
 ```
 (|)
 ```
+
 (Cursor is in |)
 
 Installation
-====================
+------------
+
 1. download autoclose-otbedit.zip from the [releases page](https://github.com/kusabashira/auto-close-otbedit/releases)
 
 2. Unpack the zip file, and put all in your OTBEdit directory.
@@ -25,12 +29,15 @@ Installation
 ```scm
 (use auto-close)
 ```
+
 (Please create if otbedit.scm doesn't exist in scmlib directory)
 
 License
-====================
+-------
+
 MIT License
 
 Author
-====================
+------
+
 wara <kusabashira227@gmail.com>
