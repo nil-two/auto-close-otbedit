@@ -1,4 +1,4 @@
-(define (load-wara-auto-close)
+(define (load-kusabashira-auto-close)
   (define (get-back-char)
     (editor-get-row-col-char
       (editor-get-cur-row)
@@ -132,4 +132,4 @@
             (editor-paste-string "\n")
             (editor-paste-string (make-string current-indent #\tab))))))))
 
-(load-wara-auto-close)
+(load-kusabashira-auto-close)
